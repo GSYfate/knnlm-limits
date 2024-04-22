@@ -1,0 +1,4 @@
+politics, government, law, police
+sports, athletics, game, soccer
+business, commerce, trade, market,
+technology, engineering, science, internet
