@@ -3,9 +3,6 @@
 
 Table of Contents
 =================
-  * [Background](#background)
-  * [Available Models](#available-models)
-  * [Results](#results)
   * [Quickstart](#quickstart)
     * [Requirements](#requirements)
     * [Step 1: Evaluating the base Language Model](#step-1-evaluating-the-base-language-model)
@@ -13,24 +10,16 @@ Table of Contents
     * [Step 3: Building the FAISS index](#step-3-building-the-faiss-index)
     * [Step 4: Evaluating Models](#step-4-evaluating-models)
   * [Evaluation](#evaluation)
+  
 
-
-
-## Background
-
-### kNN-LM 
-The k-nearest neighbor language model takes an already-trained model, performs a single forward pass over the entire training set, and creates a datastore of `(key,value)` pairs, where `key` is a hidden representation of the trained model after reading a training example, and `value` is the token that should be predicted next.
-
-At test time, for every predicted token, the model performs a k-nearest neighbors search in the datastore, retrieves the `(key,value)` pairs that are closest to the test hidden representation, and normalizes their distances using softmax. Finally, the model interpolates the base LM's probability with the probability formed by the retrieved nearest neighbors and their normalized distances.
-For more details, see the [paper by Khandelwal et al., ICLR'2020](https://arxiv.org/pdf/1911.00172.pdf)
 
 
 ## Quickstart - Language Modeling
 
 ### Step 0: Clone this repository:
 ```bash
-git clone https://github.com/neulab/knn-transformers
-cd knn-transformers
+git clone https://github.com/GSYfate/knnlm-limits.git
+cd knnlm-limits
 ```
 
 #### Requirements 
@@ -46,7 +35,7 @@ conda install -c conda-forge faiss-cpu
 
 ### Step 1: Evaluating the base Language Model
 
-To evaluate the fine-tuned model (for example, `neulab/gpt2-finetuned-wikitext103`) on the validation set (without any retrieval):
+To evaluate the base model (for example, `meta-llama/Llama-2-7b-hf`) on the validation set (without any retrieval):
 
 ```bash
 MODEL=meta-llama/Llama-2-7b-hf
@@ -54,13 +43,13 @@ MODEL=meta-llama/Llama-2-7b-hf
 python -u run_clm.py \
   --model_name_or_path ${MODEL} \
   --dataset_name wikitext --dataset_config_name wikitext-103-raw-v1 \
-  --output_dir checkpoints/${MODEL} \
+  --output_dir output/${MODEL} \
   --do_eval --eval_subset validation
 ```
 
 ### Step 2: Saving a Datastore
 
-To save a datastore, run:
+To save a datastore(for example, wikitext), run:
 ```bash
 MODEL=meta-llama/Llama-2-7b-hf
 
@@ -68,8 +57,8 @@ python -u run_clm.py \
   --model_name_or_path ${MODEL} \
   --dataset_name wikitext --dataset_config_name wikitext-103-raw-v1 \
   --do_eval --eval_subset train \
-  --output_dir checkpoints/${MODEL} \
-  --dstore_dir checkpoints/${MODEL} \
+  --output_dir output/${MODEL} \
+  --dstore_dir { path of your datastore } \
   --save_knnlm_dstore
 ```
 or run
