@@ -487,8 +487,12 @@ def main():
         
         for i, (source, target) in enumerate(zip(sources,targets)):
             s = torch.tensor(source).long()
-            # remove 2 procdeing tokens due to llama tokenization
-            t = torch.tensor(target[2:]).long()
+            if "Meta-Llama-3-8B" in model.config._name_or_path:
+                t = torch.tensor(target[1:]).long()
+            elif "Llama-2-7b-hf" in model.config._name_or_path:
+                t = torch.tensor(target[2:]).long()
+            else:
+                t = torch.tensor(target[1:]).long()
             input_ids[i,:len(s)] = s
             input_ids[i,len(s):len(s) + len(t)] = t
             labels[i,len(s):len(s) + len(t)] = t
@@ -802,6 +806,11 @@ def main():
         accs = score(model, name, tokenizer, examples, training_args.output_dir, data_args.eval_subset, max_length)
         print(f'{name} gets {accs}% on {data_args.dataset_name}')
         print(f"{accs['domain_cond']} & {accs['lm']} & {accs['tok_mean']} & {accs['pmi']} & {accs['dcpmi']}")
+        if knn_args.knn:
+            print("parameters")
+            print("k",knn_args.k)
+            print("lmbda",knn_args.lmbda)
+            print("temp",knn_args.knn_temp)
         d = {
             "acc": accs['lm'],
             "token_mean_acc": accs['tok_mean'],

@@ -491,7 +491,10 @@ def main():
         
         for i, (source, target) in enumerate(zip(sources,targets)):
             s = torch.tensor(source).long()
-            t = torch.tensor(target[2:]).long()
+            if "Meta-Llama-3-8B" in model.config._name_or_path:
+                t = torch.tensor(target[1:]).long()
+            elif "Llama-2-7b-hf" in model.config._name_or_path:
+                t = torch.tensor(target[2:]).long()
             input_ids[i,:len(s)] = s
             input_ids[i,len(s):len(s) + len(t)] = t
             # ignore all predictions except in the target span

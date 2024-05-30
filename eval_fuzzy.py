@@ -533,15 +533,18 @@ def main():
             
             
     def init_label2word_id(encoder, label2synonym, single=False):
+        # single = True
         label2synonym_id = {}
         for k, v in label2synonym.items():
             synonym_id = []
             for word in v:
+                # print("word: ", word)
+                # print(encoder(word)["input_ids"])
                 if single:
-                    if len(encoder(word)["input_ids"]) == 3: # check single word
-                        synonym_id.append(encoder(word)["input_ids"][2]) # change later
+                    if len(encoder(word)["input_ids"]) == 2: # check single word
+                        synonym_id.append(encoder(word)["input_ids"][1]) # change later
                 else:
-                    synonym_id.append(encoder(word)["input_ids"][2])
+                    synonym_id.append(encoder(word)["input_ids"][1])
             label2synonym_id[k] = torch.LongTensor(synonym_id).cuda()
         return label2synonym_id
 
@@ -820,7 +823,7 @@ def main():
         elif 'hyp' in name:
             hypotheses = [' neutral', ' partisan']
             label2synonym = {0: [' neutral', ' fair', ' objective'], 1: [' partisan', ' biased', ' unfair']}
-            prompt = '\n neutral or partisan? Answer:'
+            prompt = ' neutral or partisan? Answer:'
             icl_str = ""
             examples = []
             for row in dataset:
@@ -870,6 +873,11 @@ def main():
             "dcpmi": accs['dcpmi'], 
             "num_examples": len(examples), 
         }
+        if knn_args.knn:
+            print("parameters")
+            print("k",knn_args.k)
+            print("lmbda",knn_args.lmbda)
+            print("temp",knn_args.knn_temp)
         with open(os.path.join(training_args.output_dir, "eval.json"), "w") as f:
             f.write(json.dumps(d) + "\n")
 

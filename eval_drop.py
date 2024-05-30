@@ -618,7 +618,7 @@ def main():
                 input_ids = input_ids[..., -(max_length - max_tokens_to_generate):]
 
             with torch.no_grad():
-                outputs = model.generate(input_ids, max_new_tokens=max_tokens_to_generate)
+                outputs = model.generate(input_ids, pad_token_id=tokenizer.eos_token_id, max_new_tokens=max_tokens_to_generate)
             
             prediction, generation = get_answer_from_model_output(outputs, tokenizer, prompt)
 

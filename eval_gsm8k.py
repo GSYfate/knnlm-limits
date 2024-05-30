@@ -331,7 +331,7 @@ def evaluate_dataset(model, tokenizer, device, eval_dataset, max_length, batch_s
                 attention_mask = torch.ones(input_ids.shape, device=device)
                 outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_length=max_length)
             else:
-                outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, max_new_tokens=512)
+                outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_new_tokens=512)
         
         # Process each example in the batch
         for i, output in enumerate(outputs):

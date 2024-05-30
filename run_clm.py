@@ -585,6 +585,11 @@ def main():
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         print("begin evaluation")
+        print("parameters")
+        print("k",knn_args.k)
+        print("lmbda",knn_args.lmbda)
+        print("temp",knn_args.knn_temp)
+        metrics = trainer.evaluate()
         metrics = trainer.evaluate()
 
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
