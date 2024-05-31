@@ -359,6 +359,8 @@ def main():
         for name in name_list:
             print(f'task: {name}')
             data = BBHData.load_from_huggingface(config=name)
+            # print("data")
+            # print(data)
             n_test_samples = len(data.samples) - ntrain
             total_test_samples += n_test_samples 
             result = evaluate(

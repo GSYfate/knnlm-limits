@@ -495,6 +495,8 @@ def main():
                 t = torch.tensor(target[1:]).long()
             elif "Llama-2-7b-hf" in model.config._name_or_path:
                 t = torch.tensor(target[2:]).long()
+            else:
+                t = torch.tensor(target[1:]).long()
             input_ids[i,:len(s)] = s
             input_ids[i,len(s):len(s) + len(t)] = t
             # ignore all predictions except in the target span

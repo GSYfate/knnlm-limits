@@ -5,13 +5,13 @@ python -u eval_fuzzy.py  \
   --validation_file data/sst2/test.jsonl \
   --ignore_pad_token_for_loss \
   --per_device_eval_batch_size=1 \
-  --output_dir output/sst2/fuzzy/wiki103/${MODEL} \
+  --output_dir output/sst2/fuzzy/base/${MODEL} \
   --do_eval \
   --eval_subset validation \
-  --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
-  --knn \
-  --knn_temp 3.0 --k 1600 --lmbda 0.2 \
-  --dstore_size 135989494 \
+  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
+  # --knn \
+  # --knn_temp 3.0 --k 1600 --lmbda 0.2 \
+  # --dstore_size 135989494 \
   # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
   # --knn \
   # --knn_temp 3.0 --k 1600 --lmbda 0.3 \

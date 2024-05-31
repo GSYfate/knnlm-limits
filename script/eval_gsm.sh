@@ -4,7 +4,7 @@ python -u eval_gsm8k.py  \
   --model_name_or_path ${MODEL} \
   --dataset_name gsm8k --dataset_config_name main \
   --per_device_eval_batch_size=1 \
-  --output_dir output/gsm8k/test/base/${MODEL} \
+  --output_dir output/gsm8k/test/wiki/${MODEL} \
   --batch_size 1 \
   --do_eval \
   --eval_subset test \

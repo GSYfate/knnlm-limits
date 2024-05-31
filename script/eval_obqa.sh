@@ -12,7 +12,7 @@ python -u eval_pmi.py  \
   --eval_subset test \
   --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
   --knn \
-  --knn_temp 5.0 --k 1600 --lmbda 0.2 \
+  --knn_temp 3.0 --k 2048 --lmbda 0.2 \
   --dstore_size 135989494 \
   # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
   # --knn \
