@@ -255,6 +255,7 @@ def main():
     else:
         model_args, data_args, training_args, knn_args = parser.parse_args_into_dataclasses()
 
+    training_args._n_gpu = 1
 
     # Setup logging
     logging.basicConfig(
@@ -482,7 +483,6 @@ def main():
 
     def eval_one_ex(model, encoder, input_texts, max_len):
         device = next(model.parameters()).device
-
         inputs = encoder.encode_plus(input_texts, return_tensors="pt").to(device)
         input_ids = inputs["input_ids"]
 
@@ -534,6 +534,12 @@ def main():
             
     def init_label2word_id(encoder, label2synonym, single=False):
         # single = True
+        # model_name = encoder.pretrained_model_name_or_path'
+        model_name = encoder.init_kwargs.get('name_or_path', None)
+        if "Llama-2-7b-hf" in model_name:
+            word_idx = 2
+        else:
+            word_idx = 1
         label2synonym_id = {}
         for k, v in label2synonym.items():
             synonym_id = []
@@ -541,10 +547,10 @@ def main():
                 # print("word: ", word)
                 # print(encoder(word)["input_ids"])
                 if single:
-                    if len(encoder(word)["input_ids"]) == 2: # check single word
-                        synonym_id.append(encoder(word)["input_ids"][1]) # change later
+                    if len(encoder(word)["input_ids"]) == word_idx + 1: # check single word
+                        synonym_id.append(encoder(word)["input_ids"][word_idx]) # change later
                 else:
-                    synonym_id.append(encoder(word)["input_ids"][1])
+                    synonym_id.append(encoder(word)["input_ids"][word_idx])
             label2synonym_id[k] = torch.LongTensor(synonym_id).cuda()
         return label2synonym_id
 

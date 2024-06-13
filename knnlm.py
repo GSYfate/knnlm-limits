@@ -103,11 +103,11 @@ class KNNWrapper(object):
             gpu_resource = faiss.StandardGpuResources()
             gpu_indices = []
             for i, cpu_index in enumerate(cpu_indices):
-                if len(cpu_indices) > 4:
+                if  torch.cuda.device_count() > 1:
                     if i in [0, 1, 2, 8]:
-                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
-                    else:
                         gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 1, cpu_index, co))
+                    else:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
                 else:
                     gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
                 logger.info(f'Moving index {i} to GPU took {time.time() - start_time} s')

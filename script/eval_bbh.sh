@@ -9,18 +9,23 @@ python -u eval_bbh.py  \
   --output_dir output/bbh/test/wiki103/${MODEL} \
   --do_eval \
   --eval_subset test \
-  --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
+  --dstore_dir /share/rush/datastore/math/${MODEL} \
   --knn \
-  --knn_temp 3.0 --k 1600 --lmbda 0.2 \
-  --dstore_size 120966390 \
-  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
-  # --knn \
-  # --knn_temp 1.0 --k 1024 --lmbda 0.2 \
-  # --dstore_size 140210422 \
+  --knn_temp 3.0 --k 2048 --lmbda 0.2 \
+  --dstore_size 187174908 \
   # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
   # --knn \
   # --knn_temp 3 --k 2048 --lmbda 0.2 \
   # --dstore_size 135989494 \
+  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
+  # --knn \
+  # --knn_temp 3.0 --k 1600 --lmbda 0.2 \
+  # --dstore_size 120966390 \
+  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
+  # --knn \
+  # --knn_temp 1.0 --k 1024 --lmbda 0.2 \
+  # --dstore_size 140210422 \
+
   # --dstore_dir /share/rush/datastore/math/${MODEL} \
   # --knn \
   # --knn_temp 1.0 --k 1024 --lmbda 0.2 \

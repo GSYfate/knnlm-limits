@@ -252,7 +252,7 @@ def main():
         model_args, data_args, training_args, knn_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args, knn_args = parser.parse_args_into_dataclasses()
-
+    training_args._n_gpu = 1
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -288,7 +288,7 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
-
+    
     set_seed(training_args.seed)
 
     # Get the datasets: you can either provide your own JSON training and evaluation files (see below)

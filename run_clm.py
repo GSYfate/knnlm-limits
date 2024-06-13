@@ -238,7 +238,7 @@ def main():
         model_args, data_args, training_args, knn_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args, knn_args = parser.parse_args_into_dataclasses()
-
+    training_args._n_gpu = 1
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -402,7 +402,9 @@ def main():
         logger.info(f"Training new model from scratch - Total size={n_params/2**20:.2f}M params")
 
     model.resize_token_embeddings(len(tokenizer))
-
+    print("device:",training_args.device)
+    print(training_args._n_gpu)
+    model.to(training_args.device)
     # Injecting KNN
     dimension = model.config.hidden_size
     knn_wrapper = None
@@ -440,8 +442,8 @@ def main():
             load_from_cache_file=not data_args.overwrite_cache,
             desc="Running tokenizer on dataset",
         )
-    print("tokenized dataset is")
-    print(tokenized_datasets["validation"][0:10])
+    # print("tokenized dataset is")
+    # print(tokenized_datasets["validation"][0:10])
     if data_args.block_size is None:
         block_size = tokenizer.model_max_length
         if block_size > 1024:
@@ -590,8 +592,7 @@ def main():
         print("lmbda",knn_args.lmbda)
         print("temp",knn_args.knn_temp)
         metrics = trainer.evaluate()
-        metrics = trainer.evaluate()
-
+        
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
         metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
         try:

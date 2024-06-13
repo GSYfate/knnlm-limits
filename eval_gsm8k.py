@@ -311,6 +311,7 @@ def evaluate_dataset(model, tokenizer, device, eval_dataset, max_length, batch_s
     sample_prompt = None
     results = []
     model.to(device)
+    print("device:", device)
     tq = tqdm(total=len(eval_dataset), desc="Acc:  0.0%")
     # Process examples in batches
     for batch_start in range(0, len(eval_dataset), batch_size):
@@ -328,8 +329,8 @@ def evaluate_dataset(model, tokenizer, device, eval_dataset, max_length, batch_s
     
         with torch.no_grad():
             if 'mistral' in model.name_or_path.lower():
-                attention_mask = torch.ones(input_ids.shape, device=device)
-                outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_length=max_length)
+                # attention_mask = torch.ones(input_ids.shape, device=device)
+                outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_new_tokens=512)
             else:
                 outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_new_tokens=512)
         
@@ -391,6 +392,8 @@ def main():
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
     # send_example_telemetry("run_translation", model_args, data_args)
 
+    training_args._n_gpu = 1
+    
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",

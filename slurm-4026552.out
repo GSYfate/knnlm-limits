@@ -1,0 +1,28 @@
+06/11/2024 00:19:44 - WARNING - __main__ - Process rank: 0, device: cpu, n_gpu: 1distributed training: True, 16-bits training: False
+val dataset length is
+146730
+/home/sg2323/miniconda3/envs/faiss/lib/python3.9/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:29<00:59, 29.74s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:56<00:27, 27.94s/it]Loading checkpoint shards: 100%|██████████| 3/3 [01:20<00:00, 26.35s/it]Loading checkpoint shards: 100%|██████████| 3/3 [01:20<00:00, 26.96s/it]
+device: cpu
+1
+text_column_name is text
+06/11/2024 00:21:18 - WARNING - __main__ - The tokenizer picked seems to have a very large `model_max_length` (1000000000000000019884624838656). Picking 1024 instead. You can change that default value by passing --block_size xxx.
+06/11/2024 00:28:58 - WARNING - accelerate.utils.other - Detected kernel version 5.4.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+06/11/2024 00:28:58 - INFO - knnlm3 - keytype being saved: KEY_TYPE.last_ffn_input
+06/11/2024 00:28:58 - INFO - knnlm3 - Saving fp16
+call get_model_last_layer
+06/11/2024 00:28:58 - INFO - knnlm3 - Building index
+06/11/2024 00:28:59 - INFO - knnlm3 - Adding Keys
+06/11/2024 00:28:59 - INFO - knnlm3 - Adding Index 0
+/home/sg2323/miniconda3/envs/faiss/lib/python3.9/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+06/11/2024 01:03:03 - INFO - knnlm3 - Writing Index 0
+06/11/2024 01:03:04 - INFO - knnlm3 - Adding Index 1000000
+06/11/2024 01:32:56 - INFO - knnlm3 - Writing Index 1000000
+06/11/2024 01:32:57 - INFO - knnlm3 - Adding Index 2000000
+06/11/2024 02:01:37 - INFO - knnlm3 - Writing Index 2000000
+06/11/2024 02:01:37 - INFO - knnlm3 - Adding Index 3000000
+06/11/2024 02:28:32 - INFO - knnlm3 - Writing Index 3000000
+06/11/2024 02:28:32 - INFO - knnlm3 - Adding Index 4000000
+slurmstepd: error: *** JOB 4026552 ON nlplarge-compute-01 CANCELLED AT 2024-06-11T02:49:35 ***
