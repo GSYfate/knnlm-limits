@@ -451,7 +451,7 @@ class KNNSaver(object):
 
         logger.info('Adding Keys')
         interval = 160000000
-        for i in range(480000000, len(self.dstore_keys), interval):
+        for i in range(0, 160000000, interval):
             start_time = time.time()
             index_copy = faiss.clone_index(index)
             start, end = i, min(len(self.dstore_keys), i+interval)
