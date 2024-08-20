@@ -312,6 +312,7 @@ def evaluate_dataset(model, tokenizer, device, eval_dataset, max_length, batch_s
     results = []
     model.to(device)
     print("device:", device)
+    # examples = [0, 216, 262, 335, 469, 486, 1318]
     tq = tqdm(total=len(eval_dataset), desc="Acc:  0.0%")
     # Process examples in batches
     for batch_start in range(0, len(eval_dataset), batch_size):
@@ -393,7 +394,6 @@ def main():
     # send_example_telemetry("run_translation", model_args, data_args)
 
     training_args._n_gpu = 1
-    
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",

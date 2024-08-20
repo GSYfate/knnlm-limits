@@ -255,7 +255,7 @@ def main():
     else:
         model_args, data_args, training_args, knn_args = parser.parse_args_into_dataclasses()
 
-    training_args._n_gpu = 1
+    # training_args._n_gpu = 1
 
     # Setup logging
     logging.basicConfig(
@@ -294,7 +294,8 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
-
+    print("seed")
+    print(training_args.seed)
     set_seed(training_args.seed)
 
     # Get the datasets: you can either provide your own JSON training and evaluation files (see below)
@@ -829,7 +830,7 @@ def main():
         elif 'hyp' in name:
             hypotheses = [' neutral', ' partisan']
             label2synonym = {0: [' neutral', ' fair', ' objective'], 1: [' partisan', ' biased', ' unfair']}
-            prompt = ' neutral or partisan? Answer:'
+            prompt = '\n neutral or partisan? Answer:' if 'Llama-2-7b-hf' in model_args. model_name_or_path else ' neutral or partisan? Answer:'
             icl_str = ""
             examples = []
             for row in dataset:

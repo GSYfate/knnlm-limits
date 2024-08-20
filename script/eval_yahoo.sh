@@ -10,29 +10,11 @@ python -u eval_fuzzy.py  \
   --do_eval \
   --eval_subset test \
   --max_eval_samples 3000 \
-  --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
-  --knn \
-  --knn_temp 1.0 --k 2048 --lmbda 0.1 \
-  --dstore_size 120966390 \
-  
-  # --dstore_dir /share/rush/datastore/math/${MODEL} \
+ # --dstore_dir {path of datastore} \
   # --knn \
-  # --knn_temp 1.0 --k 2048 --lmbda 0.1 \
-  # --dstore_size 187174908 \
-  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
-  # --knn \
-  # --knn_temp 5.0 --k 1600 --lmbda 0.2 \
-  # --dstore_size 135989494 \
+  # --knn_temp 5.0 --k 2048 --lmbda 0.1 \
+  # --dstore_size 609687689 \
 
-  # --dstore_dir /share/rush/datastore/math/${MODEL} \
-  # --knn \
-  # --knn_temp 3.0 --k 1600 --lmbda 0.3 \
-  # --dstore_size 201842684 \
-
-  # --dstore_dir /share/rush/datastore/wiki103/${MODEL} \
-  # --knn \
-  # --knn_temp 3.0 --k 1600 --lmbda 0.3 \
-  # --dstore_size 140210422 \
   
 
 

@@ -340,11 +340,6 @@ def main():
                 **dataset_args,
             )
 
-    # if not (training_args.do_train or data_args.eval_subset == 'train'):
-    #     # If not training and not evaluating on train, we do not need to process it
-    #     del raw_datasets["train"]
-    print("val dataset length is")
-    print(len(raw_datasets["validation"]))
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -518,6 +513,8 @@ def main():
         logger.info(f'[{split}] Total eval tokens: {total_eval_tokens}')
         if knn_args.dstore_size is None and split == 'train':
             knn_args.dstore_size = total_eval_tokens
+        if split == data_args.eval_subset:
+            token_counts = total_eval_tokens
 
     if training_args.do_train:
         if "train" not in tokenized_datasets:
@@ -586,11 +583,21 @@ def main():
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
-        print("begin evaluation")
-        print("parameters")
-        print("k",knn_args.k)
-        print("lmbda",knn_args.lmbda)
-        print("temp",knn_args.knn_temp)
+        if knn_args.knn:
+            print("parameters")
+            print("k",knn_args.k)
+            print("lmbda",knn_args.lmbda)
+            print("temp",knn_args.knn_temp)
+       
+        total_word_count = 0
+
+        for item in raw_datasets[data_args.eval_subset]:
+            # Split the 'text' by whitespace to count words
+            word_count = len(item['text'].split())
+            total_word_count += word_count
+        print("token counts", token_counts)
+        print("word counts", total_word_count)
+
         metrics = trainer.evaluate()
         
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
@@ -600,7 +607,8 @@ def main():
         except OverflowError:
             perplexity = float("inf")
         metrics["perplexity"] = perplexity
-
+        word_perplexity = math.exp(metrics["eval_loss"] * token_counts /total_word_count)
+        metrics["word perplexity"] = word_perplexity 
         if knn_wrapper is not None:
             knn_metrics = knn_wrapper.get_metrics()
             metrics.update(knn_metrics)

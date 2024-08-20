@@ -10,7 +10,7 @@ from pathlib import Path
 
 import faiss
 import faiss.contrib.torch_utils
-
+import json
 from transformers import (
     AutoConfig,
     AutoModelForCausalLM,
@@ -103,11 +103,24 @@ class KNNWrapper(object):
             gpu_resource = faiss.StandardGpuResources()
             gpu_indices = []
             for i, cpu_index in enumerate(cpu_indices):
-                if  torch.cuda.device_count() > 1:
-                    if i in [0, 1, 2, 8]:
+                if torch.cuda.device_count() > 2:
+                    if i in [0, 1, 2, 3]:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 1, cpu_index, co))
+                    elif i in [4, 5, 6, 7]:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 2, cpu_index, co))
+                    else:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
+                elif torch.cuda.device_count() > 1 and len(cpu_indices) > 4:
+                    if i in [0, 1, 2, 3, 4, 8]:
                         gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 1, cpu_index, co))
                     else:
                         gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
+                elif torch.cuda.device_count() > 1:
+                    if i in [0, 1, 2]:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 1, cpu_index, co))
+                    else:
+                        gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
+
                 else:
                     gpu_indices.append(faiss.index_cpu_to_gpu(gpu_resource, 0, cpu_index, co))
                 logger.info(f'Moving index {i} to GPU took {time.time() - start_time} s')
@@ -135,11 +148,11 @@ class KNNWrapper(object):
             logger.info('Loading to memory...')
             start = time.time()
 
-            if not self.no_load_keys:
-                del self.keys
-                self.keys_from_memmap = np.memmap(f'{keys_vals_prefix}_keys.npy', 
-                    dtype=np.float16, mode='r', shape=(self.dstore_size, self.dimension))
-                self.keys = self.keys_from_memmap[:].astype(np.float16)
+            # if not self.no_load_keys:
+            #     del self.keys
+            #     self.keys_from_memmap = np.memmap(f'{keys_vals_prefix}_keys.npy', 
+            #         dtype=np.float16, mode='r', shape=(self.dstore_size, self.dimension))
+            #     self.keys = self.keys_from_memmap[:].astype(np.float16)
 
             del self.vals
             vals_from_memmap = np.memmap(f'{keys_vals_prefix}_vals.npy', dtype=np.int32, mode='r', shape=(self.dstore_size, 1))
@@ -178,21 +191,22 @@ class KNNWrapper(object):
         all_dists, all_knns = [], []
         queries = queries.float()
         for idx, one in enumerate(self.indices):
-            curr_dists, curr_knns = one.search(queries, self.k)
-            tot = 0
-            for x in self.indices[:idx]:
-                tot += x.ntotal
-            curr_knns[0, 0].cpu().item()
-            curr_knns[0, 0].cpu().item()
-            curr_knns = curr_knns + tot
-            all_dists.append(curr_dists)
-            all_knns.append(curr_knns)
+            if idx>=0:
+                curr_dists, curr_knns = one.search(queries, self.k)
+                tot = 0
+                for x in self.indices[:idx]:
+                    tot += x.ntotal
+                curr_knns[0, 0].cpu().item()
+                curr_knns[0, 0].cpu().item()
+                # print(curr_knns[0, 0])
+                curr_knns = curr_knns + tot
+                all_dists.append(curr_dists)
+                all_knns.append(curr_knns)
         knns = torch.cat(all_knns, dim=-1)
         dists = torch.cat(all_dists, dim=-1)
         indices = torch.topk(-dists, self.k, dim=-1).indices
         knns = torch.gather(knns, -1, indices)
         dists = torch.gather(dists, -1, indices)
-        #dists, knns = self.index.search(queries, self.k)
         dists, knns = dists.to(self.device), knns.to(self.device)
         return dists, knns
 
@@ -201,7 +215,6 @@ class KNNWrapper(object):
         return self.original_forward_func(input_ids=input_ids, labels=labels, attention_mask=attention_mask, **kwargs)
 
     def post_forward_hook(self, module, input, output):
-        # print("call post forward")
         batch, time_dim, vocab_size = output.shape
         shift = 0 if self.is_encoder_decoder else 1
         lm_logits = output
@@ -223,14 +236,16 @@ class KNNWrapper(object):
 
         lm_logits = lm_logits[nonpad_mask]
         queries = queries[nonpad_mask] # (nonpad, dim)
-
+        # print("queries shape")
+        # print(queries.shape)
+      
         dists, knns = self.get_knns(queries) # (nonpad batch * time, k)
 
         if self.recompute_dists:
-            knns_vecs = torch.from_numpy(self.keys[knns]).to(self.device)
+            knns_vecs = torch.from_numpy(self.keys[knns.cpu()]).to(self.device)
             dists = self.dist_func(queries, knns_vecs) 
         
-        neg_dists = -dists
+        neg_dists = - dists
 
         knn_log_probs, _ = self.knns_to_log_prob(knns, neg_dists)
         interpolated_scores = KNNWrapper.interpolate(knn_log_probs, lm_logits, self.lmbda) # (nonpad, vocab)
@@ -241,7 +256,7 @@ class KNNWrapper(object):
     def knns_to_log_prob(self, knns, neg_dists):
         probs = torch.nn.functional.softmax(neg_dists / self.knn_temperature, dim=-1)
         vals_at_knns = self.vals[knns].squeeze(-1) # (nonpad batch * time, k)
-        knn_log_probs = torch.full(size=(vals_at_knns.shape[:-1] + (self.vocab_size,)), fill_value=0.0).to(self.device)
+        knn_log_probs = torch.full(size=(vals_at_knns.shape[:-1] + (self.vocab_size,)), fill_value=0.0, dtype=probs.dtype).to(self.device)
         knn_log_probs = knn_log_probs.scatter_add(dim=-1, index=vals_at_knns, src=probs).log()
         knn_log_probs = torch.nan_to_num(knn_log_probs, nan=None, neginf=-10000.0)
         return knn_log_probs, vals_at_knns
@@ -259,6 +274,8 @@ class KNNWrapper(object):
     
     def get_metrics(self):
         return {}
+
+
     
     @staticmethod
     def l2(query, keys):
@@ -278,8 +295,8 @@ class KNNWrapper(object):
     @staticmethod
     def interpolate(knn_log_probs, lm_log_probs, lmbda):
         interpolated = torch.logaddexp(
-            #lm_log_probs + torch.log(1 - lmbda),
-            #knn_log_probs + torch.log(lmbda))
+            # lm_log_probs + torch.log(1 - lmbda),
+            # knn_log_probs + torch.log(lmbda))
             lm_log_probs + np.log(1 - lmbda),
             knn_log_probs + np.log(lmbda))
 
@@ -287,9 +304,8 @@ class KNNWrapper(object):
 
     @staticmethod
     def get_model_last_layer(model_type):
-        # works for gpt2, marian, t5. If a model does not have an ".lm_head" layer, 
+        # works for gpt2, marian, t5, llama. If a model does not have an ".lm_head" layer, 
         # add an "if model_type is ..." statement here, and return the output embedding layer
-        print("call get_model_last_layer")
         return lambda model: model.lm_head
 
     @staticmethod
@@ -297,7 +313,7 @@ class KNNWrapper(object):
         if model_type.startswith('gpt2'):
             return lambda model: model.transformer.wte
 
-    # For every model name and key type, returns a lambda that returns the relevant layer in the model, 
+    # For every model name and key type, returns a lambda that returns the arelevant layer in the model, 
     # and whether the input of that layer should be captured (True) or the output (False)
     model_layer_to_capture = {
         'bart': {

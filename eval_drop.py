@@ -271,6 +271,7 @@ def main():
         model_args, data_args, training_args, knn_args = parser.parse_args_into_dataclasses()
 
     # Setup logging
+    training_args._n_gpu = 1
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",

@@ -245,6 +245,17 @@ class KNNArguments:
     recompute_dists: bool = field(default=False)
 
 
+def seed_everything(seed=42):
+    """
+    Seed everything to make results replicable.
+    """
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True 
+    torch.backends.cudnn.benchmark = False  
+
 def main():
 
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments, KNNArguments))
@@ -288,8 +299,12 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
-    
+    print("seed")
+    print(training_args.seed)
     set_seed(training_args.seed)
+    # seed = 42
+    # set_seed(seed)
+    seed_everything(training_args.seed)
 
     # Get the datasets: you can either provide your own JSON training and evaluation files (see below)
     # or just provide the name of one of the public datasets available on the hub at https://huggingface.co/datasets/
@@ -424,6 +439,7 @@ def main():
 
     # Injecting KNN
     dimension = model.config.hidden_size
+    print("dimension is", dimension)
     knn_wrapper = None
     knn_args.seed = training_args.seed
 

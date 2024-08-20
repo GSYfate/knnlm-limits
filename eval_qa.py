@@ -11,7 +11,6 @@ import string
 import csv
 from collections import Counter
 
-import evaluate
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -690,12 +689,25 @@ def main():
             f1_list.append(max_f1)
             prec_list.append(best_prec)
             recall_list.append(best_recall)
+
+            if idx < len(eval_dataset):
+                results.append({'Question':ex['question'], 'Prediction': prediction, 'Answers': answers, 'Correct':is_correct, 'F1':max_f1})
+            if idx == len(eval_dataset) -1:
+                with open(os.path.join(output_dir,f"predictions_and_answers_{len(eval_dataset)}.csv"), 'w', newline='', encoding='utf-8') as csvfile:
+                    fieldnames = ['Question', 'Prediction', 'Answers', 'Correct', 'F1']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                    writer.writeheader()
+                    for result in results:
+                        result['Answers'] = str(result['Answers'])
+                        writer.writerow(result)
             idx += 1
             if is_correct:
                 num_correct += 1
             if has_answer:
                 num_has_answer += 1
             tq.set_description(f"F1: {sum(f1_list) / idx * 100:4.1f}%")
+            
 
         em = num_correct / idx * 100
         has_answer = num_has_answer / idx * 100

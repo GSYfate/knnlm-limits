@@ -216,7 +216,8 @@ def evaluate(model, tokenizer, device, data, name, ntrain, max_output_length, ou
         results.append({
             "question": prompt_end.strip(),
             "prediction": pred.strip(),
-            "label": label.strip()
+            "label": label.strip(),
+            "is_correct": pred.strip().startswith(label)
         })
         is_correct.append(pred.strip().startswith(label))
         if i == 0:
