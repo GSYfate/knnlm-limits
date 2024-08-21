@@ -3,6 +3,12 @@ DATASET_NAME=$2
 DS=$3
 DS_PATH=$4
 
+if [[ $DATASET_NAME == "wikitext" ]]; then
+  DATASET_CONFIG_NAME="wikitext-103-raw-v1"
+else
+  DATASET_CONFIG_NAME=""
+fi
+
 if [[ $MODEL == "meta-llama/Llama-2-7b-hf" && $DS == "wiki" ]]; then
   KNN_TEMP=5
   K=2048
@@ -36,13 +42,19 @@ elif [[ $MODEL == "mistralai/Mistral-7B-v0.3" && $DS == "math" ]]; then
 fi
 
 if [[ $DS == "base" ]]; then
-  python -u run_clm.py \
+  CMD="python -u run_clm.py \
     --model_name_or_path ${MODEL} \
     --dataset_name ${DATASET_NAME} \
     --output_dir output/${DATASET_NAME}/${DS} \
-    --do_eval --eval_subset validation
+    --do_eval --eval_subset validation"
+
+  if [[ -n $DATASET_CONFIG_NAME ]]; then
+    CMD+=" --dataset_config_name ${DATASET_CONFIG_NAME}"
+  fi
+
+  eval $CMD
 else
-  python -u run_clm.py \
+  CMD="python -u run_clm.py \
     --model_name_or_path ${MODEL} \
     --dataset_name ${DATASET_NAME} \
     --output_dir output/${DATASET_NAME}/${DS} \
@@ -50,5 +62,11 @@ else
     --dstore_dir ${DS_PATH} \
     --knn \
     --knn_temp $KNN_TEMP --k $K --lmbda $LAMBDA \
-    --dstore_size $DSTORE_SIZE
+    --dstore_size $DSTORE_SIZE"
+    
+  if [[ -n $DATASET_CONFIG_NAME ]]; then
+    CMD+=" --dataset_config_name ${DATASET_CONFIG_NAME}"
+  fi
+
+  eval $CMD
 fi

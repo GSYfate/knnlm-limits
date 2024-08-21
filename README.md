@@ -7,8 +7,8 @@ Table of Contents
     * [Step 1: Setup  the Environment](#step-1-setup-environment)
     * [Step 2: Saving a Datastore](#step-2-saving-a-datastore)
     * [Step 3: Building the FAISS index](#step-3-building-the-faiss-index)
-    * [Step 4: Evaluating Models](#step-4-evaluating-models)
-  * [Evaluation](#evaluating-models-on-downstream-tasks)
+    * [Step 4: Evaluating Perplexity](#step-4-evaluating-perplexity)
+  * [Evaluating Downstream Tasks](#evaluating-models-on-downstream-tasks)
   
 ## Quickstart
 
@@ -84,20 +84,20 @@ For example, to download the math datastore, run:
   git lfs pull
 ```
 
-### Step 4: Evaluating Models
+### Step 4: Evaluating Perplexity
 
 To evaluate kNN-LM on the validation set, run:
 
 ```
-  bash script/eval.sh {model} {dataset name} {datastore} {path of datastore}
+  bash script/eval_perplexity.sh {model} {dataset name} {datastore} {path of datastore}
 ```
-(for kNN-LM)
+for kNN-LM
 
 or
 ```
-  bash script/eval.sh {model} {dataset name} base
+  bash script/eval_perplexity.sh {model} {dataset name} base
 ```
-(for base model)
+for base model
 
 
 
@@ -105,20 +105,20 @@ For the wikitext-103 dataset, we performed some preprocessing. The evaluation co
 ```
   bash script/eval_wiki.sh {model}{datastore} {path of datastore}
 ```
-(for kNN-LM)
+for kNN-LM
 
 or
 ```
   bash script/eval_wiki.sh {model} base
 ```
-(for base model)
+for base model
 
 ## Evaluating Models on Downstream Tasks
 We evaluate both the base model and kNN-LMs on downstream tasks. For each task, we will provide the scripts used for evaluation with the base model or kNN-LM.
 
-For base model we use `script/evaluate.sh {model} {task}`
+For base model we use ` bash script/evaluate_downstream.sh {model} {task}`
 
-For kNN-LM we use `script/evaluate_knn.sh {model} {task} {datastore} {path of datastore}`
+For kNN-LM we use ` bash script/evaluate_downstream_knn.sh {model} {task} {datastore} {path of datastore}`
 
 ### Reasoning Tasks
  
@@ -128,9 +128,9 @@ Dataset: https://huggingface.co/datasets/openbookqa
 
 Evaluation command: 
 
-base: `script/evaluate.sh {model} obqa`
+base: ` bash script/evaluate_downstream.sh {model} obqa`
 
-kNN-LM: `script/evaluate_knn.sh {model} obqa {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} obqa {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
@@ -144,9 +144,9 @@ Dataset: https://huggingface.co/datasets/cais/mmlu
 
 Evaluation command:
 
-base: `script/evaluate.sh {model} mmlu`
+base: ` bash script/evaluate_downstream.sh {model} mmlu`
 
-kNN-LM: `script/evaluate_knn.sh {model} mmlu {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} mmlu {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
@@ -160,15 +160,15 @@ Evaluation command:
 
 **ARC-Challenge**
 
-base: `script/evaluate.sh {model} arc_challenge`
+base: ` bash script/evaluate_downstream.sh {model} arc_challenge`
 
-kNN-LM: `script/evaluate_knn.sh {model} arc_challenge {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} arc_challenge {datastore} {path of datastore}`
 
 **ARC-Easy**
 
-base: `script/evaluate.sh {model }arc_easy`
+base: ` bash script/evaluate_downstream.sh {model }arc_easy`
 
-kNN-LM: `script/evaluate_knn.sh {model} arc_easy {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} arc_easy {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
@@ -180,9 +180,9 @@ Dataset: https://huggingface.co/datasets/Rowan/hellaswag
 
 Evaluation command: 
 
-base: `script/evaluate.sh {model} hellaswag`
+base: ` bash script/evaluate_downstream.sh {model} hellaswag`
 
-kNN-LM: `script/evaluate_knn.sh {model} hellaswag {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} hellaswag {datastore} {path of datastore}`
 
 Eval Program: `evl_pmi.py`
 
@@ -195,9 +195,9 @@ Dataset: https://huggingface.co/datasets/drop
 
 Evaluation command:
 
-base: `script/evaluate.sh {model} drop`
+base: ` bash script/evaluate_downstream.sh {model} drop`
 
-kNN-LM: `script/evaluate_knn.sh {model} drop {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} drop {datastore} {path of datastore}`
 
 Eval Program: `eval_drop.py`
 
@@ -210,9 +210,9 @@ Dataset: https://huggingface.co/datasets/nq_open
 
 Evaluation command: 
 
-base: `script/evaluate.sh {model} nq`
+base: ` bash script/evaluate_downstream.sh {model} nq`
 
-kNN-LM: `script/evaluate_knn.sh {model} nq {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} nq {datastore} {path of datastore}`
 
 Eval Program: `eval_qa.py`
 
@@ -225,9 +225,9 @@ Dataset: https://huggingface.co/datasets/hotpot_qa
 
 Evaluation command:
 
-base: `script/evaluate.sh {model} hotpotqa`
+base: ` bash script/evaluate_downstream.sh {model} hotpotqa`
 
-kNN-LM: `script/evaluate_knn.sh {model} hotpotqa {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} hotpotqa {datastore} {path of datastore}`
 
 Eval Program: `eval_qa.py`
 
@@ -239,9 +239,9 @@ Metrics: F1 score
 Dataset: https://huggingface.co/datasets/gsm8k
 
 Evaluation command: 
-base: `script/evaluate.sh {model} gsm8k`
+base: ` bash script/evaluate_downstream.sh {model} gsm8k`
 
-kNN-LM: `script/evaluate_knn.sh {model} gsm8k {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} gsm8k {datastore} {path of datastore}`
 
 Eval Program: `eval_gsm8k.py`
 
@@ -253,9 +253,9 @@ Dataset: https://huggingface.co/datasets/lukaemon/bbh
 
 Evaluation command:
 
-base: `script/evaluate.sh {model} bbh`
+base: ` bash script/evaluate_downstream.sh {model} bbh`
 
-kNN-LM: `script/evaluate_knn.sh {model} bbh {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} bbh {datastore} {path of datastore}`
 
 Eval Program: `eval_bbh.py`
 
@@ -267,9 +267,9 @@ Dataset: https://huggingface.co/datasets/allenai/winogrande
 
 Evaluation command:
 
-base: `script/evaluate.sh {model} winogrande`
+base: ` bash script/evaluate_downstream.sh {model} winogrande`
 
-kNN-LM: `script/evaluate_knn.sh {model} winogrande {datastore} {path of datastore}`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} winogrande {datastore} {path of datastore}`
 
 Eval Program: `eval_winogrande.py`
 
@@ -285,60 +285,11 @@ Eval Program: `eval_fuzzy.py`
 Metrics: dcpmi
 
 Evaluation command:
-#### SST-2
 
+base: ` bash script/evaluate_downstream.sh {model} {sst2,rt,rte,yahoo,mr,hyp,cr,cb,agn}`
 
-base: `script/evaluate.sh {model} sst2`
+kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} {sst2,rt,rte,yahoo,mr,hyp,cr,cb,agn} {datastore} {path of datastore}`
 
-kNN-LM: `script/evaluate_knn.sh {model} sst2 {datastore} {path of datastore}`
-
-#### RT
-
-base: `script/evaluate.sh {model} rt`
-
-kNN-LM: `script/evaluate_knn.sh {model} rt {datastore} {path of datastore}`
-
-#### RTE
-
-base: `script/evaluate.sh {model} rte`
-
-kNN-LM: `script/evaluate_knn.sh {model} rte {datastore} {path of datastore}`
-
-#### Yahoo
-
-base: `script/evaluate.sh {model} yahoo`
-
-kNN-LM: `script/evaluate_knn.sh {model} yahoo {datastore} {path of datastore}`
-
-#### MR
-
-base: `script/evaluate.sh {model} mr`
-
-kNN-LM: `script/evaluate_knn.sh {model} mr {datastore} {path of datastore}`
-
-#### HYP
-
-base: `script/evaluate.sh {model} hyp`
-
-kNN-LM: `script/evaluate_knn.sh {model} hyp {datastore} {path of datastore}`
-
-#### CR
-
-base: `script/evaluate.sh {model} cr}`
-
-kNN-LM: `script/evaluate_knn.sh {model} cr {datastore} {path of datastore}`
-
-#### CB
-
-base: `script/evaluate.sh {model} cb`
-
-kNN-LM: `script/evaluate_knn.sh {model} cb {datastore} {path of datastore}`
-
-#### AGN
-
-base: `script/evaluate.sh {model} agn`
-
-kNN-LM: `script/evaluate_knn.sh {model} agn {datastore} {path of datastore}`
 
 
 

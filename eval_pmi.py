@@ -299,11 +299,8 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
-    print("seed")
-    print(training_args.seed)
-    set_seed(training_args.seed)
-    # seed = 42
-    # set_seed(seed)
+
+    # set_seed(training_args.seed)
     seed_everything(training_args.seed)
 
     # Get the datasets: you can either provide your own JSON training and evaluation files (see below)

@@ -580,6 +580,52 @@ def main():
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
+    def process_texts(test_data, tokenizer):
+        word_count = 0
+        current_title = None
+        current_texts = []
+        all_input_ids = []
+        all_attention_masks = []
+
+        for text in test_data:
+            stripped_text = text.strip()
+            
+            if stripped_text.startswith("= = =") and stripped_text.endswith("= = ="):
+                if current_title and current_texts:
+                    combined_text = "\n".join([current_title, "\n".join(current_texts)])         
+                    word_count += len(combined_text.split())
+                    encoding = tokenizer(combined_text, return_tensors="pt")
+                    all_input_ids.append(encoding['input_ids'])
+                    all_attention_masks.append(encoding['attention_mask'])
+                    current_texts = []
+                elif current_title:
+                    word_count += len(current_title.split())
+                    encoding = tokenizer(current_title, return_tensors="pt")
+                    all_input_ids.append(encoding['input_ids'])
+                    all_attention_masks.append(encoding['attention_mask'])
+                current_title = stripped_text
+            else:
+                if stripped_text != "":
+                    current_texts.append(stripped_text)
+
+        if current_title and current_texts:
+            combined_text = "\n".join([current_title, "\n".join(current_texts)])
+            word_count += len(combined_text.split())
+            encoding = tokenizer(combined_text, return_tensors="pt")
+            all_input_ids.append(encoding['input_ids'])
+            all_attention_masks.append(encoding['attention_mask'])
+        elif current_title:
+            word_count += len(current_title.split())
+            encoding = tokenizer(current_title, return_tensors="pt")
+            all_input_ids.append(encoding['input_ids'])
+            all_attention_masks.append(encoding['attention_mask'])
+
+        merged_input_ids = torch.cat(all_input_ids, dim=1)
+        merged_attention_masks = torch.cat(all_attention_masks, dim=1)
+        
+        return {'input_ids': merged_input_ids, 'attention_mask': merged_attention_masks}, word_count
+
+
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
@@ -588,26 +634,69 @@ def main():
             print("k",knn_args.k)
             print("lmbda",knn_args.lmbda)
             print("temp",knn_args.knn_temp)
-       
-        total_word_count = 0
 
-        for item in raw_datasets[data_args.eval_subset]:
-            # Split the 'text' by whitespace to count words
-            word_count = len(item['text'].split())
-            total_word_count += word_count
-        print("token counts", token_counts)
-        print("word counts", total_word_count)
+        if data_args.dataset_name == "wikitext":
+            metrics = {}
+            ds = load_dataset(data_args.dataset_name, data_args.dataset_config_name, split=data_args.eval_subset)
+            # Extract text data
+            text_data = ds["text"]
+            encodings, word_counts= process_texts(text_data, tokenizer)
+            token_counts = encodings['input_ids'].size(1)
 
-        metrics = trainer.evaluate()
-        
-        max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
-        metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
-        try:
-            perplexity = math.exp(metrics["eval_loss"])
-        except OverflowError:
-            perplexity = float("inf")
+            print(f"Word count: {word_counts}")
+            print(f"Token count: {token_counts}")
+
+            # Set parameters for sequence length and stride
+            max_length = 1024
+            stride = 512
+            seq_len = encodings['input_ids'].size(1)
+
+            nlls = []
+            prev_end_loc = 0
+
+            # Calculate negative log likelihood for each segment
+            for begin_loc in tqdm(range(0, seq_len, stride)):
+                end_loc = min(begin_loc + max_length, seq_len)
+                trg_len = end_loc - prev_end_loc 
+                input_ids = encodings['input_ids'][:, begin_loc:end_loc].to(training_args.device)
+                target_ids = input_ids.clone()
+                target_ids[:, :-trg_len] = -100
+
+                with torch.no_grad():
+                    outputs = model(input_ids, labels=target_ids)
+                    # Loss is calculated using CrossEntropyLoss
+                    neg_log_likelihood = outputs.loss
+
+                nlls.append(neg_log_likelihood)
+                prev_end_loc = end_loc
+                if end_loc == seq_len:
+                    break
+
+            # Calculate perplexity
+            perplexity = torch.exp(torch.stack(nlls).mean()).cpu().item()
+            ratio = token_counts / word_counts
+            word_perplexity = torch.exp((torch.stack(nlls).mean()) * ratio).cpu().item()
+
+        else:
+            word_counts = 0
+            for item in raw_datasets[data_args.eval_subset]:
+                # Split the 'text' by whitespace to count words
+                word_count = len(item['text'].split())
+                word_counts += word_count
+            print("token counts", token_counts)
+            print("word counts", word_counts)
+
+            metrics = trainer.evaluate()
+            
+            max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
+            metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
+            try:
+                perplexity = math.exp(metrics["eval_loss"])
+            except OverflowError:
+                perplexity = float("inf")
+            word_perplexity = math.exp(metrics["eval_loss"] * token_counts /word_counts)
+
         metrics["perplexity"] = perplexity
-        word_perplexity = math.exp(metrics["eval_loss"] * token_counts /total_word_count)
         metrics["word perplexity"] = word_perplexity 
         if knn_wrapper is not None:
             knn_metrics = knn_wrapper.get_metrics()
