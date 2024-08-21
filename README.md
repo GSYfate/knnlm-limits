@@ -37,109 +37,100 @@ conda install -c pytorch -c nvidia faiss-gpu=1.7.4 mkl=2021 blas=1.0=mkl
 
 ### Step 2: Saving a Datastore
 
-To save a datastore(for example, wikitext), run:
-```bash
-MODEL=meta-llama/Llama-2-7b-hf
+#### Models Used in the Experiment
 
-python -u run_clm.py \
-  --model_name_or_path ${MODEL} \
-  --dataset_name ${DATASET_NAME}\
-  --do_eval --eval_subset train \
-  --output_dir output/${MODEL} \
-  --dstore_dir { path of your datastore } \
-  --save_knnlm_dstore
-```
-or run
+- **Llama-2-7b**: [meta-llama/Llama-2-7b-hf](https://huggingface.co/meta-llama/Llama-2-7b-hf)
+- **Meta-Llama-3-8B**: [meta-llama/Meta-Llama-3-8B](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+- **Mistral-7B-v0.3**: [mistralai/Mistral-7B-v0.3](https://huggingface.co/mistralai/Mistral-7B-v0.3)
 
+#### Datasets Used to build the datastore
+- **wiki**: [wentingzhao/knn-prompt-datastore](https://huggingface.co/datasets/wentingzhao/knn-prompt-datastore)
+- **math**: [wentingzhao/math-textbooks](https://huggingface.co/datasets/wentingzhao/math-textbooks)
+
+
+To save a datastore, run:
 ```
-  bash script/save_dstore.sh
+  bash script/save_dstore.sh {model} {datastore} {path of datastore}
 ```
+
+e.g.
+```
+  bash script/save_dstore.sh meta-llama/Llama-2-7b-hf wiki ds/wiki/Llama-2-7b-hf
+```
+
 
 ### Step 3: Building the FAISS index
 
 
-To build the FAISS index yourself:
-```bash
-MODEL=meta-llama/Llama-2-7b-hf
-
-python -u run_clm.py \
-  --model_name_or_path ${MODEL} \
-  --dataset_name wikitext --dataset_config_name wikitext-103-raw-v1 \
-  --output_dir checkpoints/${MODEL} \
-  --dstore_dir checkpoints/${MODEL} \
-  --build_index
-```
-
-or run:
+To build the FAISS index yourself, run:
 
 ```
-  bash script/build.sh
+  bash script/build.sh {model} {datastore} {path of datastore}
 ```
-
+#### Download the built datastore
 You can also directly access our built datastore through the link below.
 
-https://huggingface.co/datasets/Reset23/math
+Math datastore: https://huggingface.co/datasets/Reset23/math
 
-https://huggingface.co/datasets/Reset23/wiki
+Wiki datastore: https://huggingface.co/datasets/Reset23/wiki
+
+**How can I download these built datastores?**
+
+For example, to download the math datastore, run:
+```
+  git clone https://huggingface.co/datasets/Reset23/math
+  cd math
+  git lfs install
+  git lfs pull
+```
 
 ### Step 4: Evaluating Models
 
-To evaluate kNN-LM on the validation set:
-
-```bash
-MODEL=meta-llama/Llama-2-7b-hf
-
-python -u run_clm.py \
-  --model_name_or_path ${MODEL} \
-  --dataset_name ${DATASET_NAME} \
-  --output_dir couput/${MODEL} \
-  --do_eval --eval_subset validation \
-```
-or run:
+To evaluate kNN-LM on the validation set, run:
 
 ```
-  bash script/eval.sh
+  bash script/eval.sh {model} {dataset name} {datastore} {path of datastore}
 ```
+(for kNN-LM)
+
+or
+```
+  bash script/eval.sh {model} {dataset name} base
+```
+(for base model)
+
 
 
 For the wikitext-103 dataset, we performed some preprocessing. The evaluation code runs as follows:
-```bash
-MODEL=meta-llama/Llama-2-7b-hf
-
-python -u run_clm_wiki.py \
-  --model_name_or_path ${MODEL} \
-  --dataset_name wikitext --dataset_config_name wikitext-103-raw-v1 \
-  --output_dir output/${MODEL} \
-  --do_eval --eval_subset validation \
 ```
-or run:
-
+  bash script/eval_wiki.sh {model}{datastore} {path of datastore}
 ```
-  bash script/eval_wiki.sh
+(for kNN-LM)
+
+or
 ```
-
-To use kNN-LM, use the `--knn` flag
-Additional possible test-time tunable hyperparameters are `--lmbda` (the interpolation factor between the datastore and the base LM), `--k` (the number of retrieved nearest neighbors) and `--knn_temp` (the softmax temperature when converting the nearest-neighbor distances into a probability distribution).
-
-E.g.
-
+  bash script/eval_wiki.sh {model} base
 ```
-  --dstore_dir {path of datastore} \
-  --knn \
-  --knn_temp 5.0 --k 2048 --lmbda 0.2 \
-  --dstore_size 609687689 \
-```
-
+(for base model)
 
 ## Evaluating Models on Downstream Tasks
+We evaluate both the base model and kNN-LMs on downstream tasks. For each task, we will provide the scripts used for evaluation with the base model or kNN-LM.
+
+For base model we use `script/evaluate.sh {model} {task}`
+
+For kNN-LM we use `script/evaluate_knn.sh {model} {task} {datastore} {path of datastore}`
 
 ### Reasoning Tasks
  
 #### OpenbookQA
 
-Datasets: https://huggingface.co/datasets/openbookqa
+Dataset: https://huggingface.co/datasets/openbookqa
 
-Evaluation command: `bash script/eval_obqa.sh`
+Evaluation command: 
+
+base: `script/evaluate.sh {model} obqa`
+
+kNN-LM: `script/evaluate_knn.sh {model} obqa {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
@@ -149,9 +140,13 @@ Metrics: dcpmi
 
 #### MMLU
 
-Datasets: https://huggingface.co/datasets/cais/mmlu
+Dataset: https://huggingface.co/datasets/cais/mmlu
 
-Evaluation command: `bash script/eval_mmlu.sh`
+Evaluation command:
+
+base: `script/evaluate.sh {model} mmlu`
+
+kNN-LM: `script/evaluate_knn.sh {model} mmlu {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
@@ -159,31 +154,35 @@ Metrics: dcpmi
 
 #### Arc
 
-Datasets: https://huggingface.co/datasets/allenai/ai2_arc
+Dataset: https://huggingface.co/datasets/allenai/ai2_arc
 
-Evaluation command: `bash script/eval_arc.sh`
+Evaluation command: 
+
+**ARC-Challenge**
+
+base: `script/evaluate.sh {model} arc_challenge`
+
+kNN-LM: `script/evaluate_knn.sh {model} arc_challenge {datastore} {path of datastore}`
+
+**ARC-Easy**
+
+base: `script/evaluate.sh {model }arc_easy`
+
+kNN-LM: `script/evaluate_knn.sh {model} arc_easy {datastore} {path of datastore}`
 
 Eval Program: `eval_pmi.py`
 
 Metrics: dcpmi
 
+#### HellaSwag
 
-Hyperparameter settings:
-ARC-Challenge: 
-```
-  --dataset_name allenai/ai2_arc --dataset_config_name ARC-Challenge\
-```
+Dataset: https://huggingface.co/datasets/Rowan/hellaswag
 
-ARC-Easy: 
-```
-  --dataset_name allenai/ai2_arc --dataset_config_name ARC-Easy \
-```
+Evaluation command: 
 
-#### HellaSwg
+base: `script/evaluate.sh {model} hellaswag`
 
-Datasets: https://huggingface.co/datasets/Rowan/hellaswag
-
-Evaluation command: `bash script/eval_hellaswag.sh`
+kNN-LM: `script/evaluate_knn.sh {model} hellaswag {datastore} {path of datastore}`
 
 Eval Program: `evl_pmi.py`
 
@@ -192,9 +191,13 @@ Metrics: dcpmi
 
 #### Drop
 
-Datasets: https://huggingface.co/datasets/drop
+Dataset: https://huggingface.co/datasets/drop
 
-Evaluation command: `bash script/eval_drop.sh`
+Evaluation command:
+
+base: `script/evaluate.sh {model} drop`
+
+kNN-LM: `script/evaluate_knn.sh {model} drop {datastore} {path of datastore}`
 
 Eval Program: `eval_drop.py`
 
@@ -203,9 +206,13 @@ Metrics: F1 score
 
 #### NQ
 
-Datasets: https://huggingface.co/datasets/nq_open
+Dataset: https://huggingface.co/datasets/nq_open
 
-Evaluation command: `bash script/eval_nq.sh`
+Evaluation command: 
+
+base: `script/evaluate.sh {model} nq`
+
+kNN-LM: `script/evaluate_knn.sh {model} nq {datastore} {path of datastore}`
 
 Eval Program: `eval_qa.py`
 
@@ -214,9 +221,13 @@ Metrics: F1 score
 
 #### HotpotQA
 
-Datasets: https://huggingface.co/datasets/hotpot_qa
+Dataset: https://huggingface.co/datasets/hotpot_qa
 
-Evaluation command: `bash script/eval_hotpot.sh`
+Evaluation command:
+
+base: `script/evaluate.sh {model} hotpotqa`
+
+kNN-LM: `script/evaluate_knn.sh {model} hotpotqa {datastore} {path of datastore}`
 
 Eval Program: `eval_qa.py`
 
@@ -225,9 +236,12 @@ Metrics: F1 score
 
 #### GSM8k
 
-Datasets: https://huggingface.co/datasets/gsm8k
+Dataset: https://huggingface.co/datasets/gsm8k
 
-Evaluation command: `bash script/eval_gsm.sh`
+Evaluation command: 
+base: `script/evaluate.sh {model} gsm8k`
+
+kNN-LM: `script/evaluate_knn.sh {model} gsm8k {datastore} {path of datastore}`
 
 Eval Program: `eval_gsm8k.py`
 
@@ -235,9 +249,13 @@ Metrics: Accuracy
 
 #### BBH
 
-Datasets: https://huggingface.co/datasets/lukaemon/bbh
+Dataset: https://huggingface.co/datasets/lukaemon/bbh
 
-Evaluation command: `bash script/eval_bbh.sh`
+Evaluation command:
+
+base: `script/evaluate.sh {model} bbh`
+
+kNN-LM: `script/evaluate_knn.sh {model} bbh {datastore} {path of datastore}`
 
 Eval Program: `eval_bbh.py`
 
@@ -245,9 +263,13 @@ Metrics: Accuracy
 
 #### Winogrande
 
-Datasets: https://huggingface.co/datasets/allenai/winogrande
+Dataset: https://huggingface.co/datasets/allenai/winogrande
 
-Evaluation command: `bash script/eval_winogrande.sh`
+Evaluation command:
+
+base: `script/evaluate.sh {model} winogrande`
+
+kNN-LM: `script/evaluate_knn.sh {model} winogrande {datastore} {path of datastore}`
 
 Eval Program: `eval_winogrande.py`
 
@@ -263,22 +285,64 @@ Eval Program: `eval_fuzzy.py`
 Metrics: dcpmi
 
 Evaluation command:
+#### SST-2
 
-`bash script/eval_sst2.sh`
 
-`bash script/eval_rt.sh`
+base: `script/evaluate.sh {model} sst2`
 
-`bash script/eval_rte.sh`
+kNN-LM: `script/evaluate_knn.sh {model} sst2 {datastore} {path of datastore}`
 
-`bash script/eval_yahoo.sh`
+#### RT
 
-`bash script/eval_mr.sh`
+base: `script/evaluate.sh {model} rt`
 
-`bash script/eval_hyp.sh`
+kNN-LM: `script/evaluate_knn.sh {model} rt {datastore} {path of datastore}`
 
-`bash script/eval_cr.sh`
+#### RTE
 
-`bash script/eval_cb.sh`
+base: `script/evaluate.sh {model} rte`
 
-`bash script/eval_agn.sh`
+kNN-LM: `script/evaluate_knn.sh {model} rte {datastore} {path of datastore}`
 
+#### Yahoo
+
+base: `script/evaluate.sh {model} yahoo`
+
+kNN-LM: `script/evaluate_knn.sh {model} yahoo {datastore} {path of datastore}`
+
+#### MR
+
+base: `script/evaluate.sh {model} mr`
+
+kNN-LM: `script/evaluate_knn.sh {model} mr {datastore} {path of datastore}`
+
+#### HYP
+
+base: `script/evaluate.sh {model} hyp`
+
+kNN-LM: `script/evaluate_knn.sh {model} hyp {datastore} {path of datastore}`
+
+#### CR
+
+base: `script/evaluate.sh {model} cr}`
+
+kNN-LM: `script/evaluate_knn.sh {model} cr {datastore} {path of datastore}`
+
+#### CB
+
+base: `script/evaluate.sh {model} cb`
+
+kNN-LM: `script/evaluate_knn.sh {model} cb {datastore} {path of datastore}`
+
+#### AGN
+
+base: `script/evaluate.sh {model} agn`
+
+kNN-LM: `script/evaluate_knn.sh {model} agn {datastore} {path of datastore}`
+
+
+
+
+## Acknowledgement
+- **knnlm Implementation**: The knnlm is implemented based on the code available at [Neuro-Symbolic Language Modeling with Automaton-augmented Retrieval](https://github.com/neulab/knn-transformers).
+- **Data for Memory-Intensive Tasks**: The data used for memory-intensive tasks is sourced from [kNN-Prompt: Nearest Neighbor Zero-Shot Inference](https://github.com/swj0419/kNN_prompt/tree/main/task_data).
