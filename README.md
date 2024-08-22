@@ -1,4 +1,11 @@
+<p align="center">
+     <h1>Great Memory, Shallow Reasoning: Limits of kNN-LMs </h1> 
+</p>
+<div align="center">
 
+| [Paper](https://arxiv.org/abs/2408.11815) |
+
+</div>
 
 
 Table of Contents
@@ -9,6 +16,8 @@ Table of Contents
     * [Step 3: Building the FAISS index](#step-3-building-the-faiss-index)
     * [Step 4: Evaluating Perplexity](#step-4-evaluating-perplexity)
   * [Evaluating Downstream Tasks](#evaluating-models-on-downstream-tasks)
+  * [Acknowledgement](#acknowledgement)
+  * [Citation](#citation)
   
 ## Quickstart
 
@@ -132,3 +141,15 @@ kNN-LM: ` bash script/evaluate_downstream_knn.sh {model} {sst2,rt,rte,yahoo,mr,h
 ## Acknowledgement
 - **knnlm Implementation**: The knnlm is implemented based on the code available at [Neuro-Symbolic Language Modeling with Automaton-augmented Retrieval](https://github.com/neulab/knn-transformers).
 - **Data for Memory-Intensive Tasks**: The data used for memory-intensive tasks is sourced from [kNN-Prompt: Nearest Neighbor Zero-Shot Inference](https://github.com/swj0419/kNN_prompt/tree/main/task_data).
+
+## Citation
+If you find our work helpful, please use the following citations.
+
+```
+@misc{geng2024greatmemoryshallowreasoning,
+      title={Great Memory, Shallow Reasoning: Limits of $k$NN-LMs}, 
+      author={Shangyi Geng, Wenting Zhao, Alexander M Rush},
+      journal ={arXiv preprint arXiv:2408.11815},
+      year={2024}
+}
+```
