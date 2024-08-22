@@ -8,8 +8,8 @@
 </div>
 
 
-Table of Contents
-=================
+
+## Table of Contents
   * [Quickstart](#quickstart)
     * [Step 1: Setup  the Environment](#step-1-setup-environment)
     * [Step 2: Saving a Datastore](#step-2-saving-a-datastore)
