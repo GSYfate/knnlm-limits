@@ -99,20 +99,6 @@ or
 ```
 for base model
 
-
-
-For the wikitext-103 dataset, we performed some preprocessing. The evaluation code runs as follows:
-```
-  bash script/eval_wiki.sh {model}{datastore} {path of datastore}
-```
-for kNN-LM
-
-or
-```
-  bash script/eval_wiki.sh {model} base
-```
-for base model
-
 ## Evaluating Models on Downstream Tasks
 We evaluate both the base model and kNN-LMs on downstream tasks. For each task, we will provide the scripts used for evaluation with the base model or kNN-LM.
 
