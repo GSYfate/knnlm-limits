@@ -25,7 +25,7 @@ import itertools
 import logging
 import math
 import os
-    
+
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
@@ -581,18 +581,25 @@ def main():
         trainer.save_state()
 
     def process_texts(test_data, tokenizer):
+        flag=0
         word_count = 0
         current_title = None
         current_texts = []
         all_input_ids = []
         all_attention_masks = []
-
         for text in test_data:
             stripped_text = text.strip()
-            
-            if stripped_text.startswith("= = =") and stripped_text.endswith("= = ="):
+
+            if stripped_text.startswith("= = =") and stripped_text.endswith("= = ="):  
+                if not current_title:
+                    combined_text =  "\n".join(current_texts)
+                    word_count += len(combined_text.split())
+                    encoding = tokenizer(combined_text, return_tensors="pt")
+                    all_input_ids.append(encoding['input_ids'])
+                    all_attention_masks.append(encoding['attention_mask'])
+                    current_texts = []
                 if current_title and current_texts:
-                    combined_text = "\n".join([current_title, "\n".join(current_texts)])         
+                    combined_text = "\n".join([current_title, "\n".join(current_texts)]) 
                     word_count += len(combined_text.split())
                     encoding = tokenizer(combined_text, return_tensors="pt")
                     all_input_ids.append(encoding['input_ids'])
@@ -609,12 +616,12 @@ def main():
                     current_texts.append(stripped_text)
 
         if current_title and current_texts:
-            combined_text = "\n".join([current_title, "\n".join(current_texts)])
+            combined_text = "\n".join([current_title, "\n".join(current_texts)])   
             word_count += len(combined_text.split())
             encoding = tokenizer(combined_text, return_tensors="pt")
             all_input_ids.append(encoding['input_ids'])
             all_attention_masks.append(encoding['attention_mask'])
-        elif current_title:
+        elif current_title:  
             word_count += len(current_title.split())
             encoding = tokenizer(current_title, return_tensors="pt")
             all_input_ids.append(encoding['input_ids'])
@@ -638,7 +645,6 @@ def main():
         if data_args.dataset_name == "wikitext":
             metrics = {}
             ds = load_dataset(data_args.dataset_name, data_args.dataset_config_name, split=data_args.eval_subset)
-            # Extract text data
             text_data = ds["text"]
             encodings, word_counts= process_texts(text_data, tokenizer)
             token_counts = encodings['input_ids'].size(1)
