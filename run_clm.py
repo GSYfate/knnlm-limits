@@ -581,7 +581,6 @@ def main():
         trainer.save_state()
 
     def process_texts(test_data, tokenizer):
-        flag=0
         word_count = 0
         current_title = None
         current_texts = []
