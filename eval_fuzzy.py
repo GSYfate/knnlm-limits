@@ -662,7 +662,7 @@ def main():
         elif 'rotten' in name:
             hypotheses = [' negative', ' positive']
             label_list = [' terrible', ' great']
-            prompt = "The sentence has a tone that is"
+            prompt = " It is"
             icl_str = ""
             label_path = "./data/rotten_tomatoes/label.txt"
             label2synonym = load_label(label_path)
@@ -680,7 +680,7 @@ def main():
                     o['uncond_premise'] = prompt
                     o['uncond_hypothesis'] = h.lower()
                     options.append(o)
-                examples.append({'options': options, 'label': label, 'label2synonym': label2synonym, "single": False})
+                examples.append({'options': options, 'label': label, 'label2synonym': label2synonym, "single": True})
             return examples
         
         elif 'cb' in name:
@@ -809,7 +809,7 @@ def main():
             label_list = [' terrible', ' great']
             label_path = "./data/label_names_sentidict.txt"
             label2synonym = load_label(label_path)
-            prompt = "The sentence has a tone that is"
+            prompt = 'It was' if 'Llama-3-8b' in model_args. model_name_or_path else 'The sentence has a tone that is'
             icl_str = ""
             examples = []
             for row in dataset:
@@ -824,7 +824,7 @@ def main():
                     o['uncond_premise'] = prompt
                     o['uncond_hypothesis'] = h.lower()
                     options.append(o)
-                examples.append({'options': options, 'label': label,'label2synonym': label2synonym, 'single': False})
+                examples.append({'options': options, 'label': label,'label2synonym': label2synonym, 'single': True})
             return examples
 
         elif 'hyp' in name:
